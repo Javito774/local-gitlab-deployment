@@ -1,0 +1,43 @@
+---
+services:
+  gitlab:
+    image: gitlab/gitlab-ee:latest
+    container_name: gitlab
+    restart: always
+    hostname: 'gitlab.local'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        # Add any other gitlab.rb configuration here, each on its own line
+        external_url 'http://gitlab.local'
+    ports:
+      - '80:80'
+      - '443:443'
+      - '22:22'
+    volumes:
+      - 'gitlab_config:/etc/gitlab'
+      - 'gitlab_logs:/var/log/gitlab'
+      - 'gitlab_data:/var/opt/gitlab'
+    networks:
+      local_gitlab:
+        aliases:
+          - gitlab.local
+
+  gitlab-runner:
+    image: gitlab/gitlab-runner:latest
+    container_name: gitlab-runner
+    privileged: true
+    restart: always
+    volumes:
+      - 'gitlab-runner-config:/etc/gitlab-runner'
+      - '/var/run/docker.sock:/var/run/docker.sock:Z'
+    networks:
+      - local_gitlab
+
+volumes:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:
+  gitlab-runner-config:
+
+networks:
+  local_gitlab:
